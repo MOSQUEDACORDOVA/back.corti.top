@@ -69,8 +69,9 @@ class UrlShortenerController extends Controller
     
     public function listUrls()
     {
-        // Consultar todas las URL generadas
-        $urls = UrlMapping::all();
+
+        // Consultar todas las URL generadas, ordenadas por ID de forma descendente
+        $urls = UrlMapping::orderBy('id', 'desc')->get();
 
         // Preparar los datos para la respuesta JSON
         $data = [];
