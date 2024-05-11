@@ -86,5 +86,29 @@ class UrlShortenerController extends Controller
         return response()->json($data);
     }
 
+    public function deleteUrl($id)
+    {
+        // Validar que el ID proporcionado sea un número entero
+        if (!is_numeric($id)) {
+            return response()->json(['error' => 'ID no válido'], 400);
+        }
+
+        // Convertir el ID a un número entero para mayor seguridad
+        $id = intval($id);
+
+        // Buscar la URL por su ID
+        $url = UrlMapping::find($id);
+
+        // Si la URL no existe, devolver un mensaje de error
+        if (!$url) {
+            return response()->json(['error' => 'URL no encontrada'], 404);
+        }
+
+        // Eliminar la URL
+        $url->delete();
+
+        // Devolver un mensaje de éxito
+        return response()->json(['message' => 'URL eliminada correctamente'], 200);
+    }
      
 }

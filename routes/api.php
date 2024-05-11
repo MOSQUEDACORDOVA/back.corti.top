@@ -10,3 +10,4 @@ Route::get('/user', function (Request $request) {
 
 Route::post('shorten', [UrlShortenerController::class, 'shorten']);
 Route::get('urls', [UrlShortenerController::class, 'listUrls']);
+Route::delete('/urls/{id}', [UrlShortenerController::class, 'deleteUrl']);
