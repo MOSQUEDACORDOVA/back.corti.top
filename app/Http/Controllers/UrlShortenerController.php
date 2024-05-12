@@ -111,5 +111,32 @@ class UrlShortenerController extends Controller
         // Devolver un mensaje de éxito
         return response()->json(['message' => 'URL eliminada correctamente'], 200);
     }
-     
+    
+    public function redirect(Request $request)
+    {
+        // Validar la entrada
+        $validator = Validator::make($request->all(), [
+            'short_code' => 'required|string|size:8',
+        ]);
+
+        // Si la validación falla, devolver errores de validación
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        // Obtener el código corto de la solicitud
+        $shortCode = $request->input('short_code');
+
+        // Buscar la URL larga asociada al código corto
+        $urlMapping = UrlMapping::where('short_code', $shortCode)->first();
+
+        // Si no se encuentra el código corto en la base de datos, devolver un mensaje de error
+        if (!$urlMapping) {
+            return response()->json(['error' => 'Código corto no encontrado'], 404);
+        }
+
+        // Devolver la URL larga asociada al código corto
+        return response()->json(['long_url' => $urlMapping->long_url]);
+    }
+
 }
