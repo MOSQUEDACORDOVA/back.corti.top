@@ -6,14 +6,59 @@ use Illuminate\Http\Request;
 use App\Models\UrlMapping; 
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Info(
+ *     title="API de URL Shortener",
+ *     description="API para acortar URLs largas",
+ *     version="1.0.0",
+ *     @OA\Contact(
+ *         email="yosoy@mosquedacordova.com"
+ *     )
+ *     
+ * )
+ */
+
 class UrlShortenerController extends Controller
 {
 
+    /**
+     * Crea una URL corta a partir de una URL larga.
+     * 
+     * @OA\Post(
+     *     path="/api/shorten",
+     *     summary="Crear una URL corta",
+     *     tags={"URLs"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="long_url", type="string", format="url", example="https://example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="URL corta generada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="short_url", type="string", example="Ly7Gh3K9")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación"
+     *     )
+     * )
+    */
+
     public function shorten(Request $request)
     {
+
         // Validar la entrada
         $validator = Validator::make($request->all(), [
-            'long_url' => 'required|url',
+            'long_url' => ['required', 'url', function ($attribute, $value, $fail) {
+                $parsedUrl = parse_url($value);
+                if (!isset($parsedUrl['host']) || !$this->isValidDomain($parsedUrl['host'])) {
+                    $fail('La URL no es válida.');
+                }
+            }],
         ]);
 
         // Si la validación falla, devolver errores de validación
@@ -43,6 +88,11 @@ class UrlShortenerController extends Controller
 
     }
 
+    private function isValidDomain($domain)
+    {
+        return checkdnsrr($domain, 'A') || checkdnsrr($domain, 'AAAA');
+    }
+
     private function generateShortCode()
     {
         // Genera un código corto único
@@ -67,6 +117,28 @@ class UrlShortenerController extends Controller
         return $shortCode;
     }
     
+    /**
+     * Obtiene una lista de todas las URLs cortas y sus URL largas asociadas.
+     * 
+     * @OA\Get(
+     *     path="/api/urls",
+     *     summary="Obtener lista de URLs",
+     *     tags={"URLs"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de URLs cortas y sus URL largas asociadas",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="short_code", type="string", example="Ly7Gh3K9"),
+     *                 @OA\Property(property="long_url", type="string", format="url", example="https://example.com")
+     *             )
+     *         )
+     *     )
+     * )
+    */
+
     public function listUrls()
     {
 
@@ -87,6 +159,34 @@ class UrlShortenerController extends Controller
         return response()->json($data);
     }
 
+    /**
+     * Elimina una URL corta y su URL larga asociada.
+     * 
+     * @OA\Delete(
+     *     path="/api/urls/{id}",
+     *     summary="Eliminar una URL",
+     *     tags={"URLs"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la URL",
+     *         @OA\Schema(type="integer", format="int64")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="URL eliminada correctamente"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="URL no encontrada"
+     *     )
+     * )
+    */
     public function deleteUrl($id)
     {
         // Validar que el ID proporcionado sea un número entero
@@ -111,6 +211,37 @@ class UrlShortenerController extends Controller
         // Devolver un mensaje de éxito
         return response()->json(['message' => 'URL eliminada correctamente'], 200);
     }
+    
+    /**
+     * Redirige a la URL larga asociada al código corto proporcionado.
+     * 
+     * @OA\Post(
+     *     path="/api/redirect",
+     *     summary="Redirigir a una URL larga",
+     *     tags={"URLs"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="short_code", type="string", example="Ly7Gh3K9")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Redirección exitosa",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="long_url", type="string", format="url", example="https://example.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Código corto no encontrado"
+     *     )
+     * )
+    */
     
     public function redirect(Request $request)
     {

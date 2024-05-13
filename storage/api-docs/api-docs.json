@@ -1,0 +1,185 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de URL Shortener",
+        "description": "API para acortar URLs largas",
+        "contact": {
+            "email": "yosoy@mosquedacordova.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/shorten": {
+            "post": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Crear una URL corta",
+                "description": "Crea una URL corta a partir de una URL larga.",
+                "operationId": "b043c0b0ae15518eebe421cd31e11734",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "long_url": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "example": "https://example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "URL corta generada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "short_url": {
+                                            "type": "string",
+                                            "example": "Ly7Gh3K9"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/urls": {
+            "get": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Obtener lista de URLs",
+                "description": "Obtiene una lista de todas las URLs cortas y sus URL largas asociadas.",
+                "operationId": "32c4e353456d0b13287e1c053324da66",
+                "responses": {
+                    "200": {
+                        "description": "Lista de URLs cortas y sus URL largas asociadas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "short_code": {
+                                                "type": "string",
+                                                "example": "Ly7Gh3K9"
+                                            },
+                                            "long_url": {
+                                                "type": "string",
+                                                "format": "url",
+                                                "example": "https://example.com"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/urls/{id}": {
+            "delete": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Eliminar una URL",
+                "description": "Elimina una URL corta y su URL larga asociada.",
+                "operationId": "b0453d2a7417f3ab689cfe3efd8ac14a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la URL",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "URL eliminada correctamente"
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    },
+                    "404": {
+                        "description": "URL no encontrada"
+                    }
+                }
+            }
+        },
+        "/api/redirect": {
+            "post": {
+                "tags": [
+                    "URLs"
+                ],
+                "summary": "Redirigir a una URL larga",
+                "description": "Redirige a la URL larga asociada al código corto proporcionado.",
+                "operationId": "4844f71bfdf51ed9b9aabdd27d77bf19",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "short_code": {
+                                        "type": "string",
+                                        "example": "Ly7Gh3K9"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Redirección exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "long_url": {
+                                            "type": "string",
+                                            "format": "url",
+                                            "example": "https://example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    },
+                    "404": {
+                        "description": "Código corto no encontrado"
+                    }
+                }
+            }
+        }
+    }
+}
